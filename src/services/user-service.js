@@ -1,12 +1,17 @@
 const { StatusCodes } = require("http-status-codes");
-const { UserRepository } = require("../repositories");
+const { UserRepository, RoleRepository } = require("../repositories");
 const AppError = require("../utils/errors/app-error");
 const { Auth } = require("../utils/common");
+const { Enum } = require("../utils/common");
+const { CUSTOMER } = Enum.ROLES_ENUMS;
 const userRepository = new UserRepository();
+const roleRepository = new RoleRepository();
 
 async function createUser(data) {
   try {
     const user = await userRepository.create(data);
+    const role = await roleRepository.getRoleByName(CUSTOMER);
+    user.addRole(role);
     return user;
   } catch (error) {
     if (
@@ -28,7 +33,7 @@ async function createUser(data) {
 
 async function signin(data) {
   try {
-    const user =await userRepository.getUserByEmail(data.email);
+    const user = await userRepository.getUserByEmail(data.email);
     if (!user) {
       throw new AppError(
         "No user found is found for given email",
@@ -44,12 +49,12 @@ async function signin(data) {
     const jwt = Auth.createToken({ id: user.id, email: user.email });
     return jwt;
   } catch (error) {
-     if (error instanceof AppError) throw error;
-     console.log(error);
-     throw new AppError(
-       "Something went wrong",
-       StatusCodes.INTERNAL_SERVER_ERROR
-     );
+    if (error instanceof AppError) throw error;
+    console.log(error);
+    throw new AppError(
+      "Something went wrong",
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
   }
 }
 
@@ -80,4 +85,4 @@ async function isAuthenticated(token) {
   }
 }
 
-module.exports = { createUser, signin ,isAuthenticated };
+module.exports = { createUser, signin, isAuthenticated };
