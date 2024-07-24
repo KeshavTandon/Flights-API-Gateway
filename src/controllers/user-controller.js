@@ -8,7 +8,6 @@ async function userSignup(req, res) {
       email: req.body.email,
       password: req.body.password,
     });
-
     SuccessResponse.data = user;
     return res.status(StatusCodes.CREATED).json(SuccessResponse);
   } catch (error) {
@@ -32,7 +31,24 @@ async function userSignIn(req, res) {
   }
 }
 
+async function addRoleToUser(req, res) {
+  try {
+    const user = await UserService.addRoletoUser({
+      role: req.body.role,
+      id: req.body.id,
+    });
+    SuccessResponse.data = user;
+    return res.status(StatusCodes.CREATED).json(SuccessResponse);
+  } catch (error) {
+    console.log(error);
+    ErrorResponse.error = error;
+    return res.status(error.statusCode).json(ErrorResponse);
+  }
+}
+
+
 module.exports = {
   userSignup,
   userSignIn,
+  addRoleToUser
 };
